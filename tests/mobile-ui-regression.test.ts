@@ -5,8 +5,17 @@ describe("mobile UI regressions", () => {
   it("keeps onboarding date and primary action visually separated on phones", () => {
     const source = readFileSync("src/components/onboarding.tsx", "utf8");
 
-    expect(source).toContain('className="block space-y-3"');
+    expect(source).toContain('className="block min-w-0 space-y-3"');
     expect(source).toContain('className="mt-8 w-full"');
+  });
+
+  it("constrains native date inputs inside narrow phone cards", () => {
+    const input = readFileSync("src/components/ui/input.tsx", "utf8");
+    const onboarding = readFileSync("src/components/onboarding.tsx", "utf8");
+
+    expect(input).toContain("min-w-0");
+    expect(input).toContain("max-w-full");
+    expect(onboarding).toContain('className="block min-w-0 space-y-3"');
   });
 
   it("prevents compact navigation buttons from wrapping their labels", () => {

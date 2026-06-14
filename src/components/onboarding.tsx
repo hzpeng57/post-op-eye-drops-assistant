@@ -31,7 +31,7 @@ export function Onboarding({ onStart }: { onStart: (startDate: string) => void }
             </p>
           </div>
 
-          <label className="block space-y-3">
+          <label className="block min-w-0 space-y-3">
             <span className="flex items-center gap-2 text-sm font-semibold text-slate-700">
               <CalendarDays className="h-4 w-4" />
               恢复计划开始日期
