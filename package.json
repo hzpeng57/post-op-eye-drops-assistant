@@ -1,0 +1,38 @@
+{
+  "name": "post-op-eye-drops-assistant",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@tailwindcss/postcss": "4.3.1",
+    "class-variance-authority": "0.7.1",
+    "clsx": "2.1.1",
+    "lucide-react": "1.18.0",
+    "next": "16.2.9",
+    "react": "19.2.7",
+    "react-dom": "19.2.7",
+    "tailwind-merge": "3.6.0",
+    "tailwindcss": "4.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "24.12.0",
+    "@types/react": "19.2.7",
+    "@types/react-dom": "19.2.3",
+    "eslint": "9.39.1",
+    "eslint-config-next": "16.2.9",
+    "typescript": "5.9.3",
+    "vitest": "4.1.8"
+  },
+  "overrides": {
+    "postcss": "8.5.15"
+  }
+}

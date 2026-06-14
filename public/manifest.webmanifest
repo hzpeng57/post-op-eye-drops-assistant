@@ -1,0 +1,19 @@
+{
+  "name": "术后滴眼液助手",
+  "short_name": "滴眼助手",
+  "description": "帮助近视手术患者按时、按顺序完成恢复期滴眼液流程。",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f7fafc",
+  "theme_color": "#f7fafc",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
