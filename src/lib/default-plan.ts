@@ -55,6 +55,20 @@ export const DEFAULT_MEDICATIONS: Medication[] = [
       type: "fixed",
       dailyDoseCount: 4
     }
+  },
+  {
+    id: "cyclosporine",
+    name: "环孢素",
+    shortName: "环孢素",
+    description: "免疫抑制剂，每天 2 次，间隔 ≥ 12 小时",
+    order: 5,
+    accentClass: "bg-rose-500",
+    rule: {
+      type: "fixed",
+      dailyDoseCount: 2
+    },
+    waitAfterMinutes: 15,
+    minIntervalMinutes: 720
   }
 ];
 

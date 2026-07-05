@@ -153,19 +153,51 @@ function buildScheduleItems(
 ): ScheduleItem[] {
   const wakeMinutes = parseClockTime(plan.wakeTime);
   const sleepMinutes = parseClockTime(plan.sleepTime);
-  const maxStepCount = activeSummaries.length;
-  const latestStartMinutes = Math.max(
-    wakeMinutes,
-    sleepMinutes - (maxStepCount - 1) * plan.medicationIntervalMinutes
-  );
+  const medicationMap = new Map(plan.medications.map((m) => [m.id, m]));
+
+  /* Compute the maximum cumulative wait between steps in a slot that contains
+     every active medication. This replaces the old `(maxStepCount - 1) *
+     plan.medicationIntervalMinutes` so that custom per-medication wait times
+     don't push the last step past `sleepTime`. */
+  const sortedActives = [...activeSummaries].sort((a, b) => a.order - b.order);
+  let maxStepWaitSum = 0;
+  for (let i = 0; i < sortedActives.length - 1; i++) {
+    const nextMed = medicationMap.get(sortedActives[i + 1].medicationId);
+    maxStepWaitSum += nextMed?.waitAfterMinutes ?? plan.medicationIntervalMinutes;
+  }
+
+  const latestStartMinutes = Math.max(wakeMinutes, sleepMinutes - maxStepWaitSum);
   const spacing =
     slotCount === 1 ? 0 : (latestStartMinutes - wakeMinutes) / (slotCount - 1);
+
   const selectedSlotsByMedication = new Map(
     activeSummaries.map((summary) => [
       summary.medicationId,
       new Set(distributeDoseSlots(slotCount, summary.dailyDoseCount))
     ])
   );
+
+  /* For medications with a minimum interval between doses, force an extremal
+     slot distribution so the first and last dose span the full wake window. */
+  for (const summary of activeSummaries) {
+    const med = medicationMap.get(summary.medicationId);
+    if (med?.minIntervalMinutes && summary.dailyDoseCount >= 2) {
+      const doseCount = summary.dailyDoseCount;
+      const slots = new Set<number>();
+      slots.add(0);
+      if (slotCount > 1) {
+        slots.add(slotCount - 1);
+      }
+      const remaining = doseCount - slots.size;
+      if (remaining > 0 && slotCount > 2) {
+        const inner = distributeDoseSlots(slotCount - 2, remaining);
+        for (const s of inner) {
+          slots.add(s + 1);
+        }
+      }
+      selectedSlotsByMedication.set(summary.medicationId, slots);
+    }
+  }
 
   return Array.from({ length: slotCount }, (_, slotIndex) => {
     const scheduledMinute = Math.round(wakeMinutes + spacing * slotIndex);
@@ -174,20 +206,30 @@ function buildScheduleItems(
     const itemMedications = activeSummaries
       .filter((summary) => selectedSlotsByMedication.get(summary.medicationId)?.has(slotIndex))
       .sort((a, b) => a.order - b.order);
-    const steps: ScheduleStep[] = itemMedications.map((summary, stepIndex) => ({
-      id: `${itemId}-${summary.medicationId}`,
-      scheduleItemId: itemId,
-      medicationId: summary.medicationId,
-      medicationName: summary.name,
-      medicationShortName: summary.shortName,
-      order: summary.order,
-      scheduledAt: localDateTimeToIso(
-        date,
-        scheduledMinute + stepIndex * plan.medicationIntervalMinutes
-      ),
-      waitAfterMinutes:
-        stepIndex === itemMedications.length - 1 ? null : plan.medicationIntervalMinutes
-    }));
+
+    let cumulativeWait = 0;
+    const steps: ScheduleStep[] = itemMedications.map((summary, stepIndex) => {
+      const stepScheduledAt = localDateTimeToIso(date, scheduledMinute + cumulativeWait);
+      const isLast = stepIndex === itemMedications.length - 1;
+      const nextSummary = isLast ? null : itemMedications[stepIndex + 1];
+      const nextMed = nextSummary ? medicationMap.get(nextSummary.medicationId) : null;
+      const waitAfter = isLast ? null : (nextMed?.waitAfterMinutes ?? plan.medicationIntervalMinutes);
+
+      if (!isLast) {
+        cumulativeWait += waitAfter as number;
+      }
+
+      return {
+        id: `${itemId}-${summary.medicationId}`,
+        scheduleItemId: itemId,
+        medicationId: summary.medicationId,
+        medicationName: summary.name,
+        medicationShortName: summary.shortName,
+        order: summary.order,
+        scheduledAt: stepScheduledAt,
+        waitAfterMinutes: waitAfter
+      };
+    });
 
     return {
       id: itemId,

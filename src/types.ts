@@ -2,7 +2,8 @@ export type MedicationId =
   | "levofloxacin"
   | "fluorometholone"
   | "calf-blood-gel"
-  | "sodium-hyaluronate";
+  | "sodium-hyaluronate"
+  | "cyclosporine";
 
 export type MedicationRule =
   | {
@@ -29,6 +30,11 @@ export interface Medication {
   order: number;
   accentClass: string;
   rule: MedicationRule;
+  /** Wait minutes after the previous medication before taking this one.
+   *  Overrides the plan-level medicationIntervalMinutes for this step. */
+  waitAfterMinutes?: number;
+  /** Minimum minutes between two doses of this medication on the same day. */
+  minIntervalMinutes?: number;
 }
 
 export interface TreatmentPlan {

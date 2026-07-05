@@ -41,9 +41,9 @@ describe("progress summaries", () => {
       now: "2026-06-14T23:00:00.000+08:00"
     });
 
-    expect(summary.totalDoses).toBe(20);
+    expect(summary.totalDoses).toBe(22);
     expect(summary.completedDoses).toBe(2);
-    expect(summary.missedDoses).toBe(18);
-    expect(summary.completionRate).toBe(10);
+    expect(summary.missedDoses).toBe(20);
+    expect(summary.completionRate).toBe(9);
   });
 });

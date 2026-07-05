@@ -81,18 +81,55 @@ describe("schedule engine", () => {
     expect(distributeDoseSlots(4, 4)).toEqual([0, 1, 2, 3]);
   });
 
+  it("respects per-medication waitAfterMinutes for cyclosporine", () => {
+    const plan = createDefaultTreatmentPlan("2026-06-14");
+    const dailyPlan = generateDailyPlan(plan, "2026-06-14");
+
+    // Slot 0 has all 5 medications, so the step for sodium-hyaluronate
+    // (right before cyclosporine) should have waitAfterMinutes = 15.
+    const slot0 = dailyPlan.items[0];
+    expect(slot0).toBeDefined();
+    const hyaluronateStep = slot0.steps.find(
+      (s) => s.medicationId === "sodium-hyaluronate"
+    );
+    expect(hyaluronateStep).toBeDefined();
+    expect(hyaluronateStep!.waitAfterMinutes).toBe(15);
+
+    // The last step (cyclosporine) should have null waitAfterMinutes.
+    const cyclosporineStep = slot0.steps.find(
+      (s) => s.medicationId === "cyclosporine"
+    );
+    expect(cyclosporineStep).toBeDefined();
+    expect(cyclosporineStep!.waitAfterMinutes).toBeNull();
+  });
+
+  it("places cyclosporine doses at extremal slots for 12h minimum interval", () => {
+    const plan = createDefaultTreatmentPlan("2026-06-14");
+    const dailyPlan = generateDailyPlan(plan, "2026-06-14");
+
+    // Cyclosporine should appear in slot 0 and the last slot.
+    const slotIdsWithCyclosporine = dailyPlan.items
+      .filter((item) =>
+        item.steps.some((s) => s.medicationId === "cyclosporine")
+      )
+      .map((item) => item.slotIndex);
+
+    expect(slotIdsWithCyclosporine).toEqual([0, dailyPlan.items.length - 1]);
+  });
+
   it("generates day-one sessions with merged medication flows in fixed drop order", () => {
     const plan = createDefaultTreatmentPlan("2026-06-14");
     const dailyPlan = generateDailyPlan(plan, "2026-06-14");
 
     expect(dailyPlan.postOpDay).toBe(1);
     expect(dailyPlan.items).toHaveLength(8);
-    expect(dailyPlan.totalDoseCount).toBe(20);
+    expect(dailyPlan.totalDoseCount).toBe(22);
     expect(dailyPlan.items[0].steps.map((step) => step.medicationId)).toEqual([
       "levofloxacin",
       "fluorometholone",
       "calf-blood-gel",
-      "sodium-hyaluronate"
+      "sodium-hyaluronate",
+      "cyclosporine"
     ]);
     expect(dailyPlan.items[1].steps.map((step) => step.medicationId)).toEqual([
       "fluorometholone"

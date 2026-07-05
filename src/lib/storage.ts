@@ -1,4 +1,5 @@
-import type { PersistedAppState } from "@/types";
+import type { PersistedAppState, TreatmentPlan } from "@/types";
+import { DEFAULT_MEDICATIONS } from "@/lib/default-plan";
 
 export const APP_STORAGE_KEY = "post-op-eye-drops-assistant:v1";
 
@@ -28,7 +29,9 @@ export function loadAppState(): PersistedAppState {
     }
     return {
       schemaVersion: 1,
-      treatmentPlan: parsed.treatmentPlan ?? null,
+      treatmentPlan: parsed.treatmentPlan
+        ? migrateTreatmentPlan(parsed.treatmentPlan)
+        : null,
       doseRecords: parsed.doseRecords,
       activeSession: parsed.activeSession ?? null,
       generatedAt: parsed.generatedAt ?? new Date().toISOString()
@@ -50,4 +53,23 @@ export function clearAppState(): void {
     return;
   }
   window.localStorage.removeItem(APP_STORAGE_KEY);
+}
+
+/**
+ * Adds any default medications that are missing from the treatment plan.
+ * Existing dose records and active sessions are left untouched.
+ */
+export function migrateTreatmentPlan(plan: TreatmentPlan): TreatmentPlan {
+  const existingIds = new Set(plan.medications.map((m) => m.id));
+  const missing = DEFAULT_MEDICATIONS.filter((m) => !existingIds.has(m.id));
+
+  if (missing.length === 0) {
+    return plan;
+  }
+
+  return {
+    ...plan,
+    medications: [...plan.medications, ...missing].sort((a, b) => a.order - b.order),
+    updatedAt: new Date().toISOString()
+  };
 }
