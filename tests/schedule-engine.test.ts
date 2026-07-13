@@ -85,7 +85,7 @@ describe("schedule engine", () => {
     const plan = createDefaultTreatmentPlan("2026-06-14");
     const dailyPlan = generateDailyPlan(plan, "2026-06-14");
 
-    // Slot 0 has all 5 medications, so the step for sodium-hyaluronate
+    // Slot 0 has all 4 medications, so the step for sodium-hyaluronate
     // (right before cyclosporine) should have waitAfterMinutes = 15.
     const slot0 = dailyPlan.items[0];
     expect(slot0).toBeDefined();
@@ -123,11 +123,10 @@ describe("schedule engine", () => {
 
     expect(dailyPlan.postOpDay).toBe(1);
     expect(dailyPlan.items).toHaveLength(8);
-    expect(dailyPlan.totalDoseCount).toBe(22);
+    expect(dailyPlan.totalDoseCount).toBe(18);
     expect(dailyPlan.items[0].steps.map((step) => step.medicationId)).toEqual([
       "levofloxacin",
       "fluorometholone",
-      "calf-blood-gel",
       "sodium-hyaluronate",
       "cyclosporine"
     ]);

@@ -33,23 +33,11 @@ export const DEFAULT_MEDICATIONS: Medication[] = [
     }
   },
   {
-    id: "calf-blood-gel",
-    name: "小牛血去蛋白提取物眼用凝胶",
-    shortName: "小牛血",
-    description: "促进修复眼用凝胶",
-    order: 3,
-    accentClass: "bg-amber-500",
-    rule: {
-      type: "fixed",
-      dailyDoseCount: 4
-    }
-  },
-  {
     id: "sodium-hyaluronate",
     name: "玻璃酸钠滴眼液",
     shortName: "玻璃酸钠",
     description: "人工泪液，缓解干涩",
-    order: 4,
+    order: 3,
     accentClass: "bg-emerald-500",
     rule: {
       type: "fixed",
@@ -61,7 +49,7 @@ export const DEFAULT_MEDICATIONS: Medication[] = [
     name: "环孢素",
     shortName: "环孢素",
     description: "免疫抑制剂，每天 2 次，间隔 ≥ 12 小时",
-    order: 5,
+    order: 4,
     accentClass: "bg-rose-500",
     rule: {
       type: "fixed",

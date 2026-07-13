@@ -56,20 +56,24 @@ export function clearAppState(): void {
 }
 
 /**
- * Adds any default medications that are missing from the treatment plan.
+ * Syncs the treatment plan's medication list with the current defaults:
+ * adds newly introduced medications and removes deprecated ones.
  * Existing dose records and active sessions are left untouched.
  */
 export function migrateTreatmentPlan(plan: TreatmentPlan): TreatmentPlan {
+  const defaultIds = new Set(DEFAULT_MEDICATIONS.map((m) => m.id));
   const existingIds = new Set(plan.medications.map((m) => m.id));
   const missing = DEFAULT_MEDICATIONS.filter((m) => !existingIds.has(m.id));
+  const removed = plan.medications.filter((m) => !defaultIds.has(m.id));
 
-  if (missing.length === 0) {
+  if (missing.length === 0 && removed.length === 0) {
     return plan;
   }
 
+  const kept = plan.medications.filter((m) => defaultIds.has(m.id));
   return {
     ...plan,
-    medications: [...plan.medications, ...missing].sort((a, b) => a.order - b.order),
+    medications: [...kept, ...missing].sort((a, b) => a.order - b.order),
     updatedAt: new Date().toISOString()
   };
 }
