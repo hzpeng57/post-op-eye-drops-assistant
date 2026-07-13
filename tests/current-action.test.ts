@@ -76,6 +76,21 @@ describe("current action selection", () => {
       })
     ).toBeNull();
 
+    // Also invalidates a session whose step index is out of bounds
+    // (e.g. after the medication list changed across versions).
+    expect(
+      getEffectiveActiveSession({
+        dailyPlan,
+        records: [],
+        activeSession: {
+          ...activeSession,
+          scheduleItemId: dailyPlan.items[0].id,
+          currentStepIndex: 999
+        },
+        now: new Date("2026-06-14T08:01:00.000+08:00")
+      })
+    ).toBeNull();
+
     expect(
       getEffectiveActiveSession({
         dailyPlan,
@@ -83,6 +98,7 @@ describe("current action selection", () => {
         activeSession: {
           ...activeSession,
           scheduleItemId: dailyPlan.items[3].id,
+          currentStepIndex: 0,
           startedAt: "2026-06-14T14:00:00.000+08:00"
         },
         now: new Date("2026-06-14T15:30:00.000+08:00")

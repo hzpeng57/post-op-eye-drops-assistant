@@ -63,5 +63,15 @@ export function getEffectiveActiveSession({
   }
 
   const focus = selectCurrentScheduleFocus({ dailyPlan, records, now });
-  return focus.readyItem?.id === activeSession.scheduleItemId ? activeSession : null;
+  if (focus.readyItem?.id !== activeSession.scheduleItemId) {
+    return null;
+  }
+
+  // Invalidate stale sessions whose step index is out of bounds (e.g.
+  // after the medication list changed across versions).
+  if (activeSession.currentStepIndex >= focus.readyItem.steps.length) {
+    return null;
+  }
+
+  return activeSession;
 }
